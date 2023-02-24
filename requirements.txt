@@ -1,5 +1,4 @@
 configparser
-json
 asyncio
 datetime
 time
