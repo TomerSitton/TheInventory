@@ -2,6 +2,3 @@ configparser
 asyncio
 datetime
 pandas
-urllib.parse
-os
-csv
