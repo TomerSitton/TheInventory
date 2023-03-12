@@ -88,10 +88,10 @@ async def handle_command(message,channel):
     output = file_path = None
     if len(command.split()) == 1:
         if command in ["?","help","usage"]:
-            output = """Welcome to The Inventory!\nTo add a link, share it in the group and then reply to that message with #<Category>.\nTo list valid categories use the "/list" command.\nTo add a category, use the "/add <category>" command.\nTo remove a category, use the "/rm <category>" command.\nTo get the current file, use the "/results" command."""
+            output = """Welcome to The Inventory!\nTo add a link, share it in the group and then reply to that message with #<Category>.\nTo list valid categories use the "/list" command.\nTo add a category, use the "/add <category>" command.\nTo remove a category, use the "/rm <category>" command.\nTo get the current file, use the "/show" command."""
         elif command in ["list", "ls", "show", "categories", "category"]:
             output = "Valid categories are: {}".format("\n" + "\n".join(CATEGORIES))
-        elif command in ["results"]:
+        elif command in ["show"]:
             output = "The current Inventory"
             file_path = get_current_file_path() 
         else:
