@@ -1,3 +1,4 @@
+from os import stat
 import configparser
 import json
 import asyncio
@@ -20,7 +21,6 @@ from telethon.tl.types import (
 )
 """
 TODO - add "change" to change the category of an already existing row
-TODO - add option to show/send the excel file
 """
 
 
@@ -77,16 +77,23 @@ async def main(config):
                     config.write(config_file)
 
 
+#async with client.action(chat, 'document') as action:
+#    await client.send_file(chat, zip_file, progress_callback=action.progress)
+
 async def handle_command(message,channel):
     print(message)
     global CATEGORIES
     global FORBIDDEN_CHARS
     command = message[1:].lower()
+    output = file_path = None
     if len(command.split()) == 1:
         if command in ["?","help","usage"]:
-            output = """Welcome to The Inventory!\nTo add a link, share it in the group and then reply to that message with #<Category>.\nTo list valid categories use the "/list" command.\nTo add a category, use the "/add <category>" command.\nTo remove a category, use the "/rm <category>" command."""
+            output = """Welcome to The Inventory!\nTo add a link, share it in the group and then reply to that message with #<Category>.\nTo list valid categories use the "/list" command.\nTo add a category, use the "/add <category>" command.\nTo remove a category, use the "/rm <category>" command.\nTo get the current file, use the "/results" command."""
         elif command in ["list", "ls", "show", "categories", "category"]:
             output = "Valid categories are: {}".format("\n" + "\n".join(CATEGORIES))
+        elif command in ["results"]:
+            output = "The current Inventory"
+            file_path = get_current_file_path() 
         else:
             output = "Unknown command: {}".format(command)
     elif len(command.split()) == 2:
@@ -116,7 +123,10 @@ async def handle_command(message,channel):
     else:
         output = "Unknown command: {}".format(command)
 
-    await client.send_message(channel, output)
+    if file_path is not None:
+        await client.send_message(channel, output, file=file_path)
+    else:
+        await client.send_message(channel, output)
 
 async def add_data_from_message(link_message, hashtag_message,channel):
     if link_message.media is not None:
@@ -143,7 +153,7 @@ async def extract_message_data(link_message, hashtag_message,channel):
     data["Used by"] = ""  
     data["Notes"] = ""
     data["Rank"] = ""
-    
+
     media = link_message.media
     if isinstance(media, MessageMediaWebPage):
         data["Site Name"] = media.webpage.site_name
@@ -160,24 +170,30 @@ async def extract_message_data(link_message, hashtag_message,channel):
         print("Does not support file type {}".format(type(media)))
     return data
 
+def get_current_file_path():
+    output_dir = "output"
+    files = listdir(output_dir)
+    if len(files) == 0:
+        return "{}/{}.csv".format(output_dir, datetime.today().strftime('%Y-%m-%d'))
+    elif len(files) == 1:
+        return "{}/{}".format(output_dir,files[0])
+    else:
+        raise RuntimeError("Too much files in the output directory!")
+
+
 def dump_data(data):
     global COLUMNS
     print(data)
-    output_dir = "output"
-    files = listdir(output_dir)
+    file_path = get_current_file_path()
     values = ["" if value is None else value for value in data.values()]
-    if len(files) == 0:
-        file_name = "{}/{}.csv".format(output_dir, datetime.today().strftime('%Y-%m-%d'))
-        with open(file_name, 'w', encoding="utf-8", newline='') as f:
+    if stat(file_path).st_size == 0:
+        with open(file_path, 'w', encoding="utf-8", newline='') as f:
             writer = csv.writer(f)
             writer.writerows([COLUMNS,values])
-    elif len(files) == 1:
-        with open("{}/{}".format(output_dir,files[0]), 'a', encoding="utf-8", newline='') as f:
+    else:        
+        with open(file_path, 'a', encoding="utf-8", newline='') as f:
             writer = csv.writer(f)
             writer.writerow(values)
-    else:
-        print("Too much files in the output directory!")
-        return
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
