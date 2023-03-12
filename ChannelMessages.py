@@ -18,9 +18,15 @@ from telethon.tl.types import (
     MessageMediaWebPage,
     MessageMediaPhoto
 )
+"""
+TODO - add "change" to change the category of an already existing row
+TODO - add option to show/send the excel file
+"""
+
+
 
 #CATEGORIES = []
-COLUMNS = ["Date","Category", "Site Name","URL","Title","Description"]
+COLUMNS = ["Date","Category", "Site Name","URL","Title","Description", "Used by", "Notes", "Rank"]
 FORBIDDEN_CHARS = [",", "'", "\"", "\\", "/", "{", "}", "[", "]", "`", "@", "#", "$", "%", "^", "*", ";", "?", "."]
 
 async def main(config):
@@ -58,7 +64,7 @@ async def main(config):
                 message_id = message.id
                 print("Current Message ID is:", message_id)
                 
-                
+
                 if message.message.lower().startswith("#") and message.reply_to is not None:
                     link_message = await client.get_messages(entity=my_channel, ids=message.reply_to.reply_to_msg_id)
                     await add_data_from_message(link_message=link_message, hashtag_message=message, channel=my_channel)
@@ -134,7 +140,10 @@ async def extract_message_data(link_message, hashtag_message,channel):
     data = dict.fromkeys(COLUMNS)
     data["Date"] = link_message.date.strftime('%Y-%m-%d')
     data["Category"] =  message_category
-
+    data["Used by"] = ""  
+    data["Notes"] = ""
+    data["Rank"] = ""
+    
     media = link_message.media
     if isinstance(media, MessageMediaWebPage):
         data["Site Name"] = media.webpage.site_name
