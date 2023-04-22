@@ -73,7 +73,7 @@ async def main(config):
                     await handle_command(message.message, my_channel)
 
                 config.set('Telegram','message_id',str(message_id))
-                with open("config.ini","w") as config_file:
+                with open("Public/config.ini","w") as config_file:
                     config.write(config_file)
 
 
@@ -106,7 +106,7 @@ async def handle_command(message,channel):
             else:
                 CATEGORIES.append(param)
                 config.set('Telegram','categories',",".join(CATEGORIES))
-                with open("config.ini","w") as config_file:
+                with open("Public/config.ini","w") as config_file:
                     config.write(config_file)
                 output = "Added category {} to The Inventory".format(param)
         elif cmd in ["remove", "rm", "delete", "del"]:
@@ -115,7 +115,7 @@ async def handle_command(message,channel):
             else:
                 CATEGORIES.remove(param)
                 config.set('Telegram','categories',",".join(CATEGORIES))
-                with open("config.ini","w") as config_file:
+                with open("Public/config.ini","w") as config_file:
                     config.write(config_file)
                 output = "Removed category {} from The Inventory".format(param)
         else:
@@ -171,7 +171,7 @@ async def extract_message_data(link_message, hashtag_message,channel):
     return data
 
 def get_current_file_path():
-    output_dir = "output"
+    output_dir = "Public/output"
     files = listdir(output_dir)
     if len(files) == 0:
         return "{}/{}.csv".format(output_dir, datetime.today().strftime('%Y-%m-%d'))
@@ -197,7 +197,7 @@ def dump_data(data):
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
-    config.read("config.ini")
+    config.read("Public/config.ini")
     api_id = config['Telegram']['api_id']
     api_hash = config['Telegram']['api_hash']
     username = config['Telegram']['username']
